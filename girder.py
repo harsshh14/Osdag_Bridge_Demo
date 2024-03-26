@@ -1,3 +1,6 @@
+import math
+
+
 class Girder_Design():
     def __init__ (self):
         self.span= 48.5 #m
@@ -19,16 +22,19 @@ class Girder_Design():
         self.space_between_girder=3.4 #m
         self.slab_depth=240 #mm
         self.servicibility_req="no transverse stiffener provided" #[no transverse stiffener provided, only transverse stiffener provided,transverse stiffener + one level of longitudnal stiffener, second longitudnal stiffener at NA ]
+        self.transverse_stiffener_spacing=2000  #mm
 
         self.fy= 350 #MPa
         self.fck= 40 #MPa
-
+        self.epsilon=math.sqrt(self.fy/250)
         #Fatigue Requirments
         self.bridge_location= "Rural Area" #Inputs= ["Near Industrial Area", "Rural Area", "Others"]
 
         self.section_dimension()
         self.web_thickness_check()
+        self.compression_flange_checks()
         self.define_properties()
+        self.force_output()
         self.Fatigue_Check()
 
     def section_dimension(self):
@@ -51,16 +57,45 @@ class Girder_Design():
 
     def web_thickness_check(self):
         #[no transverse stiffener provided, only transverse stiffener provided,transverse stiffener + one level of longitudnal stiffener, second longitudnal stiffener at NA ]
-        if self.servicibility_req="no transverse stiffener provided":
+        if self.servicibility_req=="no transverse stiffener provided":
+            if (self.girder_dimension["dw"]/self.girder_dimension["tw"])<200*self.epsilon:
+                print("Ok")
+            else:
+                print(" not ok")
+        elif self.servicibility_req=="only transverse stiffener provided":
             pass
-        elif 
+        elif self.servicibility_req=="transverse stiffener + one level of longitudnal stiffener":
+            pass
+        elif self.servicibility_req=="second longitudnal stiffener at NA ":
+            pass
+
+    def compression_flange_checks(self):
+        if self.servicibility_req=="no transverse stiffener provided":
+            if (self.girder_dimension["dw"]/self.girder_dimension["tw"])<345*self.epsilon**2:
+                print("Ok")
+            else:
+                print(" not ok")
+        elif self.servicibility_req=="only transverse stiffener provided":
+            if (self.transverse_stiffener_spacing<1.5*self.girder_dimension["dw"]) and (self.girder_dimension["dw"]/self.girder_dimension["tw"])<345*self.epsilon:
+                print("ok for compression flange check")
+            elif (self.transverse_stiffener_spacing>=1.5*self.girder_dimension["dw"]) and (self.girder_dimension["dw"]/self.girder_dimension["tw"])<345*self.epsilon**2:
+                print("ok for compression flange check")
+            else:
+                print("fails in compression flange check")
 
     def define_properties(self):
         self.steel_section={ 
             type :"steel_section"
-
+            }
+        self.permanent_loading={ 
+            type :"permanent_loading"
+            }
+        self.transient_loading={ 
+            type :"transient_loading"
             }
 
+    def force_output(self):
+        pass
 
     def Fatigue_Check(self):
         #IRC 6

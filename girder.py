@@ -16,3 +16,28 @@ class Girder_Design():
 
         '''Number of girders need to be changed/ automated to minimise material requirements'''
         self.num_of_girders= 4
+
+        self.fy= 350 #MPa
+        self.fck= 40 #MPa
+
+        #Fatigue Requirments
+        self.bridge_location= "Rural Area" #Inputs= ["Near Industrial Area", "Rural Area", "Others"]
+
+
+        self.Fatigue_Check()
+
+
+    
+    def Fatigue_Check(self):
+        #IRC 6
+        if self.bridge_location== "Near Industrial Area":
+            self.num_of_cycles= 10000000
+        elif self.bridge_location=="Others":
+            self.num_of_cycles=2000000
+        else:
+            print("No fatigue check needed for bridges in rural area")
+            return 
+        #IRC 22
+                
+
+Girder_Design.__init__(self=Girder_Design())

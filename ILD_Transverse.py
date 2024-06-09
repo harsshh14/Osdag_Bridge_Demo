@@ -59,8 +59,8 @@ def create_P_matrix(load_loc,overhang_len,girder_space,num_supp):
     if load_loc<overhang_len:
         P[0]=overhang_len-load_loc
         P_vert_supp[0]=1
-    elif load_loc>(overhang_len+num_supp*girder_space):
-        P[num_supp-1]=load_loc-(overhang_len+num_supp*girder_space)
+    elif load_loc>(overhang_len+(num_supp-1)*girder_space):
+        P[num_supp-1]=load_loc-(overhang_len+(num_supp-1)*girder_space)
         P_vert_supp[num_supp-1]=1
     elif (load_loc-overhang_len)%(girder_space)==0:
         P_vert_supp[int((load_loc-overhang_len)/(girder_space))]=1
@@ -73,13 +73,15 @@ def create_P_matrix(load_loc,overhang_len,girder_space,num_supp):
     # b=(overhang_len+int((load_loc-overhang_len)/(girder_space)+1)*girder_space-load_loc)
     print(P_vert_supp)
     print(P)
+    print("")
 
-create_P_matrix(5,1.25,2.5,3)
+# create_P_matrix(6.75,1.25,2.5,3)
 
-def ILD_Transverse_three_girder(width,space_vectorization,overhang_len,girder_space, height_slab,fck,num_supp):
+def ILD_Transverse_three_girder(space_vectorization,overhang_len,girder_space, height_slab,fck,num_supp):
     #height of slab is needed to calculate I(Moment of inertia)
     #Grade of concrete is needed to calculate E
     #num_supp is the number of supports(girders)
+    width=(num_supp-1)*girder_space+2*overhang_len
     b=1000 #mm (length of 1 m section of road is considered )
     E=5000*math.sqrt(fck)  #MPa
     I=b*height_slab**3/12 #mm4
@@ -87,14 +89,15 @@ def ILD_Transverse_three_girder(width,space_vectorization,overhang_len,girder_sp
     #a code for K matrix has been created in the trial.py file. check it
     K= K_matrix(num_supp,I,E,girder_space)    
     
-    # for load_loc in load_location_vec(overhang_len,num_supp,girder_space):
-    # #load_loc is the location of load on the beam
-    #     create_P_matrix(load_loc,overhang_len,girder_space,num_supp)
+    for load_loc in load_location_vec(overhang_len,num_supp,girder_space):
+    #load_loc is the location of load on the beam
+        # print(load_loc)
+        create_P_matrix(load_loc,overhang_len,girder_space,num_supp)
                         
 
 
 
-ILD_Transverse_three_girder(10,0,1.25,2.5,0,0,4)
+ILD_Transverse_three_girder(0,1.25,2.5,0,0,3)
 ################################################################
 
 

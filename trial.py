@@ -50,3 +50,14 @@ import numpy as np
 # K_matrix(3,0,0,2.5)
 n=3
 print(np.zeros(2*n))
+
+
+A=[[1.25],[0],[0]]
+C=np.array([[1.25, 0, 0]])
+
+# Reshape the array to 3x1
+C = C.reshape((3, 1))
+print(C)
+B=[[1.6,0.8,0],[0.8,3.2,0.8],[0,0.8,1.6]]
+B_inv=np.linalg.inv(B)
+print(np.matmul(B_inv,A))

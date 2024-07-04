@@ -54,13 +54,13 @@ def load_location_vec(overhang_len, num_supp, girder_space):
     return load_location
 
 def create_P_matrix(load_loc,overhang_len,girder_space,num_supp):
-    P=np.zeros(2*num_supp) #contains the values required for solving matrix
+    P=np.zeros(num_supp) #contains the values required for solving matrix
     P_vert_supp=np.zeros(num_supp) #contains the values for the vertical reactions on supports
     if load_loc<overhang_len:
         P[0]=overhang_len-load_loc
         P_vert_supp[0]=1
     elif load_loc>(overhang_len+(num_supp-1)*girder_space):
-        P[num_supp-1]=load_loc-(overhang_len+(num_supp-1)*girder_space)
+        P[num_supp-1]=-(load_loc-(overhang_len+(num_supp-1)*girder_space))
         P_vert_supp[num_supp-1]=1
     elif (load_loc-overhang_len)%(girder_space)==0:
         P_vert_supp[int((load_loc-overhang_len)/(girder_space))]=1
@@ -69,13 +69,14 @@ def create_P_matrix(load_loc,overhang_len,girder_space,num_supp):
         P_vert_supp[int((load_loc-overhang_len)/(girder_space))+1]=1-(overhang_len+(int((load_loc-overhang_len)/(girder_space))+1)*girder_space-load_loc)/girder_space
         P[int((load_loc-overhang_len)/(girder_space))]=(load_loc-overhang_len-int((load_loc-overhang_len)/(girder_space))*girder_space)*(overhang_len+int((load_loc-overhang_len)/(girder_space)+1)*girder_space-load_loc)**2/girder_space**2
         P[int((load_loc-overhang_len)/(girder_space))+1]=(overhang_len+int((load_loc-overhang_len)/(girder_space)+1)*girder_space-load_loc)*(load_loc-overhang_len-int((load_loc-overhang_len)/(girder_space))*girder_space)**2/girder_space**2
+    # print(P_vert_supp)
+    # print(P)    
+    return P, P_vert_supp
     # a=(load_loc-overhang_len-int((load_loc-overhang_len)/(girder_space))*girder_space)
     # b=(overhang_len+int((load_loc-overhang_len)/(girder_space)+1)*girder_space-load_loc)
-    print(P_vert_supp)
-    print(P)
-    print("")
+    # print("")
 
-# create_P_matrix(6.75,1.25,2.5,3)
+# create_P_matrix(7.5,1.25,2.5,3)
 
 def ILD_Transverse_three_girder(space_vectorization,overhang_len,girder_space, height_slab,fck,num_supp):
     #height of slab is needed to calculate I(Moment of inertia)
@@ -88,16 +89,35 @@ def ILD_Transverse_three_girder(space_vectorization,overhang_len,girder_space, h
 
     #a code for K matrix has been created in the trial.py file. check it
     K= K_matrix(num_supp,I,E,girder_space)    
-    
+    K_11=np.zeros((num_supp,num_supp)) #the upper matrix of K, which is used in load_loc calculation
+    for i in range(num_supp):
+        for j in range(num_supp):
+            K_11[i][j]=K[i][j]
+    K_21=np.zeros((num_supp,num_supp))
+    for i in range(num_supp):
+        for j in range(num_supp):
+            K_21[i][j]=K[num_supp+i][j]
+    # print(K_21)
+    K_11_inv=np.linalg.inv(K_11)
+    ILD_array=[]
     for load_loc in load_location_vec(overhang_len,num_supp,girder_space):
     #load_loc is the location of load on the beam
         # print(load_loc)
-        create_P_matrix(load_loc,overhang_len,girder_space,num_supp)
-                        
+        P,P_vert_supp=create_P_matrix(load_loc,overhang_len,girder_space,num_supp)
+        P=P.reshape((num_supp,1))
+        P_unknown=np.zeros((num_supp,1))
+        P_vert_supp=P_vert_supp.reshape((num_supp,1))
+        disp_vector=np.matmul(K_11_inv,P)
+        P_unknown=(np.matmul(K_21,disp_vector)+P_vert_supp)
+        ILD_array.append(P_unknown)
+        ILD_array_rounded= np.round(ILD_array, 3)
+
+    print(ILD_array_rounded)
 
 
 
-ILD_Transverse_three_girder(0,1.25,2.5,0,0,3)
+ILD_Transverse_three_girder(0,1.25,3,250,50,3)
+# ILD_Transverse_three_girder(0,1.25,2.5,)
 ################################################################
 
 
